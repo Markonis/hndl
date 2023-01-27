@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { INTERNAL_SERVER_ERROR } from "./status";
+import { HttpStatusCode } from "./status";
 import { Endpoint, Request, Response } from "./types";
 
 export const listener = <T>(def: Endpoint<T>) => {
@@ -15,7 +15,7 @@ const acceptAndHandle = async <T>(def: Endpoint<T>, req: Request) => {
 }
 
 const listenerErrorResponse: Response = {
-  status: INTERNAL_SERVER_ERROR,
+  status: HttpStatusCode.INTERNAL_SERVER_ERROR,
   body: "Endpoint did not produce a response",
   headers: { "Content-Type": "text/plain" }
 }

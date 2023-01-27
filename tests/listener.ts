@@ -1,12 +1,12 @@
 import { deepStrictEqual } from "assert";
 import { listener } from "../src/listener";
-import { INTERNAL_SERVER_ERROR, OK } from "../src/status";
+import { HttpStatusCode } from "../src/status";
 import { Response } from "../src/types";
 
 export const listenerTests = async () => {
   {
     const response: Response = {
-      status: OK,
+      status: HttpStatusCode.OK,
       headers: { "Content-Type": "text/plain" },
       body: "Hello World"
     }
@@ -39,7 +39,7 @@ export const listenerTests = async () => {
   {
     const testListener = listener({
       accept: () => false,
-      handle: () => ({ status: OK })
+      handle: () => ({ status: HttpStatusCode.OK })
     });
 
     const actual = {
@@ -63,7 +63,7 @@ export const listenerTests = async () => {
     deepStrictEqual(
       actual,
       {
-        status: INTERNAL_SERVER_ERROR,
+        status: HttpStatusCode.INTERNAL_SERVER_ERROR,
         body: "Endpoint did not produce a response",
         headers: { "Content-Type": "text/plain" }
       },
