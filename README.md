@@ -33,7 +33,7 @@ However it's not correct, because you don't know that before I registered this h
 ```js
 app.use((req, res) => {
   res.sendStatus(400);
-})
+});
 ```
 
 So to avoid confusion like this, there is no middleware support in HNDL.
@@ -48,7 +48,7 @@ In HNDL any object that looks like this is a valid endpoint:
 type Endpoint<T> = {
   accept: (request: Request) => Optional<T> | Promise<Optional<T>>;
   handle: (payload: T) => Response | Promise<Response>;
-}
+};
 ```
 
 The most important thing to notice is the relationship between `accept` and `handle`:
@@ -62,11 +62,7 @@ A router in HNDL is defined using the function `router`, it takes a variadic lis
 endpoints like this:
 
 ```ts
-const myRouter = router(
-  firstEndpoint,
-  secondEndpoint,
-  thirdEndpoint
-)
+const myRouter = router(firstEndpoint, secondEndpoint, thirdEndpoint);
 ```
 
 The main job of the router is to choose one of the passed endpoints to handle the
@@ -95,8 +91,10 @@ This endpoint will respond to any request with a 200 OK:
 ```ts
 const everythingIsOK = {
   accept: () => true,
-  handle: () => { status: OK }
-}
+  handle: () => {
+    status: HttpStatusCode.OK;
+  },
+};
 ```
 
 This router will respond with `200 OK` if the URL starts with `/ok`,
@@ -106,21 +104,17 @@ otherwise with `404 Not Found`:
 const myRouter = router(
   {
     accept: request => request.url.startsWith("/ok"),
-    handle: () => { status: OK }
+    handle: () => { status: HttpStatusCode.OK }
   },
   {
     accept: () => true,
-    handle: () { status: NOT_FOUND }
+    handle: () { status: HttpStatusCode.NOT_FOUND }
   }
 )
 ```
-
-
 
 ## The Service
 
 When developing a web service it's necessary to perform additional
 tasks such as logging, error handling, etc. These do not fall
 into the area of responsibility of endpoints, and for this we use the `service`.
-
-

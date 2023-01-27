@@ -1,9 +1,5 @@
 import { createServer } from "http";
-import { acceptPath } from "../accept-path";
-import { endpoint } from "../endpoint";
-import { listener } from "../listener";
-import { json } from "../response";
-import { service } from "../service";
+import { acceptPath, endpoint, json, listener, service } from "..";
 
 const port = process.env.PORT || "3000";
 

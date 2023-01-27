@@ -1,6 +1,6 @@
 import { deepStrictEqual } from "assert";
 import { json } from "../src/response";
-import { OK } from "../src/status";
+import { HttpStatusCode } from "../src/status";
 
 export const responseTests = () => {
 
@@ -10,7 +10,7 @@ export const responseTests = () => {
     deepStrictEqual(
       response,
       {
-        status: OK,
+        status: HttpStatusCode.OK,
         headers: { "Content-Type": "application/json" },
         body: '{"hello":"World"}'
       }

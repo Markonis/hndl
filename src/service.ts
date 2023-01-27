@@ -1,5 +1,5 @@
 import { endpoint, router } from "./endpoint";
-import { INTERNAL_SERVER_ERROR, NOT_FOUND } from "./status";
+import { HttpStatusCode } from "./status";
 import { Endpoint, ErrorHandler, Logger, Request, Response } from "./types";
 
 type ServiceProps = {
@@ -35,7 +35,7 @@ const produceResponse = async (request: Request, endpoint: Endpoint<any>, errorH
 
 const catchAllEndpoint = endpoint({
   accept: () => true,
-  handle: () => ({ status: NOT_FOUND })
+  handle: () => ({ status: HttpStatusCode.NOT_FOUND })
 });
 
 
@@ -53,5 +53,5 @@ const defaultErrorHandler = (error: any): Response => {
 
 const getErrorStatus = (error: any) => {
   if (typeof error?.status?.code === "number" && typeof error?.status?.phrase === "string") return error.status;
-  return INTERNAL_SERVER_ERROR;
+  return HttpStatusCode.INTERNAL_SERVER_ERROR;
 }
