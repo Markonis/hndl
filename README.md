@@ -115,12 +115,43 @@ const myRouter = router(
 )
 ```
 
-
-
 ## The Service
 
 When developing a web service it's necessary to perform additional
-tasks such as logging, error handling, etc. These do not fall
+tasks such as logging, error handling, etc... These do not fall
 into the area of responsibility of endpoints, and for this we use the `service`.
 
+The `service` function takes the following arguments:
 
+```ts
+type ServiceProps = {
+  endpoint: Endpoint<any>;
+  errorHandler?: ErrorHandler;
+  logger?: Logger;
+}
+
+type ErrorHandler = (error: any) => Response | Promise<Response>;
+
+type Logger = (request: Request, response: Response) => void;
+```
+
+And returns a new `endpoint` which will log requests and handle
+errors correctly thrown from both the `accept` and `handle` functions
+of the passed endpoint.
+
+It's a convenient function that is not strictly necessary in this
+package, but is something that most people will like to have.
+
+## The Listener
+
+The last piece of the puzzle is the `listener`. It is meant to conform
+to the request handler function passed into the `createServer` function
+which comes with the default node `http` module.
+
+The listener's job is to simply allow async handling of incoming
+requests. And can be used in the following way:
+
+```ts
+const myEndpoint: Endpoint = { /* ... */};
+const server = createServer(listener(myEndpoint));
+```
