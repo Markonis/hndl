@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { INTERNAL_SERVER_ERROR } from "./status";
-import { Endpoint, Request, Response } from "./types";
+import { AcceptResult, Endpoint, Falsy, Request, Response } from "./types";
 
 export const listener = <T>(def: Endpoint<T>) => {
   return (req: IncomingMessage, res: ServerResponse) => {
@@ -11,7 +11,9 @@ export const listener = <T>(def: Endpoint<T>) => {
 
 const acceptAndHandle = async <T>(def: Endpoint<T>, req: Request) => {
   const payload = await def.accept(req);
-  return payload && await def.handle(payload);
+  if (payload) {
+    return await def.handle(payload as Exclude<T, Falsy>);
+  }
 }
 
 const listenerErrorResponse: Response = {

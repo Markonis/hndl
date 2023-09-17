@@ -16,11 +16,12 @@ export type Request = IncomingMessage & {
   method: string;
 }
 
-type Optional<T> = T | undefined;
+export type Falsy = null | undefined | false | 0 | "";
+export type AcceptResult<T> = T | Falsy;
 
 export type Endpoint<T> = {
-  accept: (request: Request) => Promise<Optional<T>> | Optional<T>;
-  handle: (payload: NonNullable<T>) => Promise<Response> | Response;
+  accept: (request: Request) => Promise<AcceptResult<T>> | AcceptResult<T>;
+  handle: (payload: Exclude<T, Falsy>) => Promise<Response> | Response;
 }
 
 export type ErrorHandler = (error: any) => Response | Promise<Response>;
