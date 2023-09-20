@@ -1,7 +1,7 @@
 import { IncomingMessage } from "http";
 
-export const json = (req: IncomingMessage) => {
-  return new Promise((resolve, reject) => {
+export const json = <T>(req: IncomingMessage) => {
+  return new Promise<T>((resolve, reject) => {
     let data = "";
     req.on("data", (chunk) => (data += chunk));
     req.on("end", () => {
