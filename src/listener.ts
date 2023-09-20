@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { INTERNAL_SERVER_ERROR } from "./status";
-import { AcceptResult, Endpoint, Falsy, Request, Response } from "./types";
+import { Endpoint, Falsy, Request, Response } from "./types";
 
 export const listener = <T>(def: Endpoint<T>) => {
   return (req: IncomingMessage, res: ServerResponse) => {
