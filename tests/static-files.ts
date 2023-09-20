@@ -5,7 +5,7 @@ import { OK } from "../src/status";
 const testFileContent = "Test file content";
 const testContentType = "test/example";
 const testHeaders = { "X-Test": "example" };
-const testValidPaths = new Set(["example.txt"]);
+const testValidPaths = new Set(["example.txt", "index.html"]);
 
 export const staticFilesTests = async () => {
   const endpoint = await staticFiles({
@@ -28,9 +28,13 @@ export const staticFilesTests = async () => {
   }
 
   {
-    const acceptResult = await endpoint.accept({
-      url: "/route/example.txt",
-    } as any);
+    const result = await endpoint.accept({ url: "/route" } as any);
+    strictEqual(result, "index.html", "Should rewrite to index.html");
+  }
+
+  {
+    const request = { url: "/route/example.txt" } as any;
+    const acceptResult = await endpoint.accept(request);
     strictEqual(acceptResult, "example.txt", "Should accept correct route");
 
     const handleResult = await endpoint.handle(acceptResult);

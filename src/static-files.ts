@@ -7,11 +7,13 @@ type FileReader = (path: string) => Promise<string | Buffer>;
 type ContentTypeResolver = (ext: string) => string | undefined;
 type HeadersProvider = (path: string) => Record<string, string>;
 type ValidPathsProvider = (path: string) => Promise<Set<string>>;
+type PathRewriter = (path: string) => string;
 
 type Params = {
   dir: string;
   route?: string;
   dynamic?: boolean;
+  pathRewriter?: PathRewriter;
   validPathsProvider?: ValidPathsProvider;
   fileReader?: FileReader;
   contentTypeResolver?: ContentTypeResolver;
@@ -20,8 +22,9 @@ type Params = {
 
 export const staticFiles = async ({
   dir,
-  route = "/",
+  route = "",
   dynamic = false,
+  pathRewriter = defaultPathRewriter,
   validPathsProvider = defaultValidPathsProvider,
   fileReader = defaultFileReader(dynamic),
   contentTypeResolver = minimalContentTypeResolver,
@@ -40,7 +43,7 @@ export const staticFiles = async ({
         validPaths = await validPathsProvider(dir);
       }
 
-      const path = request.url.substring(prefixLength);
+      const path = pathRewriter(request.url.substring(prefixLength));
       return validPaths.has(path) && join(dir, path);
     },
     handle: async (path) => {
@@ -56,6 +59,14 @@ export const staticFiles = async ({
       };
     },
   });
+};
+
+const defaultPathRewriter: PathRewriter = (path) => {
+  if (!path.length) {
+    return "index.html";
+  } else {
+    return path;
+  }
 };
 
 const defaultValidPathsProvider = (dir: string) =>
