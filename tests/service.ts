@@ -6,47 +6,63 @@ import { Request, Response } from "../src/types";
 export const serviceTests = async () => {
   {
     const testService = service({
-      logger: () => { },
+      logger: () => {},
       endpoint: {
         accept: () => false,
-        handle: () => ({ status: OK })
+        handle: () => ({ status: OK }),
       },
     });
 
     const payload = await testService.accept({} as any);
     const response = await testService.handle(payload as any);
 
-    deepStrictEqual(response.status, NOT_FOUND, "Service should return 404 if endpoint doesn't accept");
+    deepStrictEqual(
+      response.status,
+      NOT_FOUND,
+      "Service should return 404 if endpoint doesn't accept",
+    );
   }
 
   {
     const testService = service({
-      logger: () => { },
+      logger: () => {},
       endpoint: {
-        accept: () => { throw { status: BAD_REQUEST } },
-        handle: () => ({ status: OK })
+        accept: () => {
+          throw { status: BAD_REQUEST };
+        },
+        handle: () => ({ status: OK }),
       },
     });
 
     const payload = await testService.accept({} as any);
     const response = await testService.handle(payload as any);
 
-    deepStrictEqual(response.status, BAD_REQUEST, "Service should return correctly when an error is thrown in accept");
+    deepStrictEqual(
+      response.status,
+      BAD_REQUEST,
+      "Service should return correctly when an error is thrown in accept",
+    );
   }
 
   {
     const testService = service({
-      logger: () => { },
+      logger: () => {},
       endpoint: {
         accept: () => true,
-        handle: () => { throw { status: UNAUTHORIZED } }
+        handle: () => {
+          throw { status: UNAUTHORIZED };
+        },
       },
     });
 
     const payload = await testService.accept({} as any);
     const response = await testService.handle(payload as any);
 
-    deepStrictEqual(response.status, UNAUTHORIZED, "Service should return correctly when an error is thrown in handle");
+    deepStrictEqual(
+      response.status,
+      UNAUTHORIZED,
+      "Service should return correctly when an error is thrown in handle",
+    );
   }
 
   {
@@ -63,14 +79,22 @@ export const serviceTests = async () => {
       },
       endpoint: {
         accept: () => true,
-        handle: () => response
+        handle: () => response,
       },
     });
 
     const payload = await testService.accept({} as any);
     await testService.handle(payload as any);
 
-    deepStrictEqual(loggedRequest, request, "Service should log the request correctly");
-    deepStrictEqual(loggedResponse, response, "Service should log the response correctly");
+    deepStrictEqual(
+      loggedRequest,
+      request,
+      "Service should log the request correctly",
+    );
+    deepStrictEqual(
+      loggedResponse,
+      response,
+      "Service should log the response correctly",
+    );
   }
-}
+};

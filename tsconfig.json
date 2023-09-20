@@ -5,12 +5,8 @@
     "moduleResolution": "node",
     "declaration": true,
     "target": "ES2017",
-    "lib": [
-      "ESNext"
-    ],
-    "outDir": "lib",
+    "lib": ["ESNext"],
+    "outDir": "lib"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

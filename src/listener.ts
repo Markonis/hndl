@@ -4,26 +4,30 @@ import { Endpoint, Falsy, Request, Response } from "./types";
 
 export const listener = <T>(def: Endpoint<T>) => {
   return (req: IncomingMessage, res: ServerResponse) => {
-    return acceptAndHandle(def, req as Request)
-      .then(response => sendResponse(response, res));
-  }
-}
+    return acceptAndHandle(def, req as Request).then((response) =>
+      sendResponse(response, res),
+    );
+  };
+};
 
 const acceptAndHandle = async <T>(def: Endpoint<T>, req: Request) => {
   const payload = await def.accept(req);
   if (payload) {
     return await def.handle(payload as Exclude<T, Falsy>);
   }
-}
+};
 
 const listenerErrorResponse: Response = {
   status: INTERNAL_SERVER_ERROR,
   body: "Endpoint did not produce a response",
-  headers: { "Content-Type": "text/plain" }
-}
+  headers: { "Content-Type": "text/plain" },
+};
 
-const sendResponse = (response: Response | undefined, serverResponse: ServerResponse) => {
+const sendResponse = (
+  response: Response | undefined,
+  serverResponse: ServerResponse,
+) => {
   const { status, headers, body } = response ? response : listenerErrorResponse;
   serverResponse.writeHead(status.code, status.phrase, headers);
   serverResponse.end(body);
-}
+};
