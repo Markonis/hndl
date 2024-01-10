@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { INTERNAL_SERVER_ERROR } from "./status";
 import { Endpoint, Falsy, Request, Response } from "./types";
+import { Readable } from "stream";
 
 export const listener = <T>(def: Endpoint<T>) => {
   return (req: IncomingMessage, res: ServerResponse) => {
@@ -29,5 +30,9 @@ const sendResponse = (
 ) => {
   const { status, headers, body } = response ? response : listenerErrorResponse;
   serverResponse.writeHead(status.code, status.phrase, headers);
-  serverResponse.end(body);
+  if (body instanceof Readable) {
+    body.pipe(serverResponse);
+  } else {
+    serverResponse.end(body);
+  }
 };

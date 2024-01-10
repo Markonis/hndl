@@ -2,6 +2,7 @@ import { deepStrictEqual } from "assert";
 import { listener } from "../src/listener";
 import { INTERNAL_SERVER_ERROR, OK } from "../src/status";
 import { Response } from "../src/types";
+import { Readable } from "stream";
 
 export const listenerTests = async () => {
   {
@@ -40,6 +41,37 @@ export const listenerTests = async () => {
     deepStrictEqual(
       actual,
       response,
+      "Listener should write the ServerResponse correctly",
+    );
+  }
+
+  {
+    const responseBody = "Hello World";
+    const response: Response = {
+      status: OK,
+      headers: { "Content-Type": "text/plain" },
+      body: new Readable({
+        read() {
+          this.push(Buffer.from(responseBody));
+          this.push(null); // Signals the end of the stream
+        }
+      }),
+    };
+
+    let actualPipedTo: any = null;
+    response.body.pipe = (writable: any) => { actualPipedTo = writable }
+    const mockServerResponse: any = { writeHead() {} };
+
+    const testListener = listener({
+      accept: () => true,
+      handle: () => response,
+    });
+
+    await testListener({} as any, mockServerResponse);
+
+    deepStrictEqual(
+      actualPipedTo,
+      mockServerResponse,
       "Listener should write the ServerResponse correctly",
     );
   }
