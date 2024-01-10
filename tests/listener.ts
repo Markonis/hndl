@@ -54,12 +54,14 @@ export const listenerTests = async () => {
         read() {
           this.push(Buffer.from(responseBody));
           this.push(null); // Signals the end of the stream
-        }
+        },
       }),
     };
 
     let actualPipedTo: any = null;
-    response.body.pipe = (writable: any) => { actualPipedTo = writable }
+    response.body.pipe = (writable: any) => {
+      actualPipedTo = writable;
+    };
     const mockServerResponse: any = { writeHead() {} };
 
     const testListener = listener({
