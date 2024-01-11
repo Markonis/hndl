@@ -1,8 +1,8 @@
 import { createServer } from "http";
 import { acceptPath } from "../accept-path";
 import { endpoint } from "../endpoint";
-import { json } from "../response";
 import { service } from "../service";
+import { jsonResponse } from "../helpers";
 
 const port = process.env.PORT || "3000";
 
@@ -13,7 +13,7 @@ const helloEndpoint = endpoint({
       params: { name: (s) => s },
     }),
   handle: (payload) => {
-    return json({ hello: payload.name });
+    return jsonResponse({ hello: payload.name });
   },
 });
 
