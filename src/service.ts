@@ -19,16 +19,15 @@ export const service = ({
 }: ServiceProps): Listener => {
   const serviceRouter = router(rootEndpoint, catchAllEndpoint);
   return async (request, serverResponse) => {
-    let response: Response;
-
     try {
-      response = await produceResponse(request as Request, serviceRouter);
+      const response = await produceResponse(request as Request, serviceRouter);
+      writeResponse(response, serverResponse);
+      logger(request as Request, response);
     } catch (error) {
-      response = await errorHandler(error);
+      const response = await errorHandler(error);
+      writeResponse(response, serverResponse);
+      logger(request as Request, response);
     }
-
-    writeResponse(response, serverResponse);
-    logger(request as Request, response);
   }
 };
 
