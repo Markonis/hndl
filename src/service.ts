@@ -19,15 +19,15 @@ export const service = ({
 }: ServiceProps): Listener => {
   const serviceRouter = router(rootEndpoint, catchAllEndpoint);
   return async (request, serverResponse) => {
+    let response: Response;
     try {
-      const response = await produceResponse(request as Request, serviceRouter);
-      writeResponse(response, serverResponse);
-      logger(request as Request, response);
+      response = await produceResponse(request as Request, serviceRouter);
+      await writeResponse(response, serverResponse);
     } catch (error) {
-      const response = await errorHandler(error);
-      writeResponse(response, serverResponse);
-      logger(request as Request, response);
+      response = await errorHandler(error);
+      await writeResponse(response, serverResponse);
     }
+    logger(request as Request, response);
   }
 };
 
@@ -47,18 +47,29 @@ const produceResponse = async (
     }
 };
 
-const writeResponse = (
+const writeResponse = async (
   response: Response,
   serverResponse: ServerResponse,
 ) => {
   const { status, headers, body } = response;
   serverResponse.writeHead(status.code, status.phrase, headers);
   if (body instanceof Readable) {
-    body.pipe(serverResponse);
+    await writeStreamBody(body, serverResponse);
   } else {
     serverResponse.end(body);
   }
 };
+
+const writeStreamBody = (
+  body: Readable,
+  serverResponse: ServerResponse
+) => {
+  return new Promise((resolve, reject) => {
+    body.on("error", reject);
+    body.on("end", resolve);
+    body.pipe(serverResponse);
+  })
+}
 
 const catchAllEndpoint = endpoint({
   accept: () => true,

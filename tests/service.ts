@@ -1,6 +1,6 @@
 import { deepStrictEqual } from "assert";
 import { service } from "../src/service";
-import { BAD_REQUEST, NOT_FOUND, OK, UNAUTHORIZED } from "../src/status";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNAUTHORIZED } from "../src/status";
 import { Request, Response } from "../src/types";
 import { Readable } from "stream";
 
@@ -64,8 +64,9 @@ export const serviceTests = async () => {
     });
 
     let actualPipedTo: any = null;
-    (response.body as any).pipe = (writable: any) => {
+    (response.body as any).pipe = function(writable: any) {
       actualPipedTo = writable;
+      this.emit("end");
     };
 
     const serverResponse = createMockResponse();
@@ -75,6 +76,34 @@ export const serviceTests = async () => {
       actualPipedTo,
       serverResponse,
       "Service should pipe body stream correctly",
+    );
+  }
+
+  {
+    const response = {
+      status: OK,
+      body: new Readable({
+        read() {
+          this.emit("error");
+        },
+      }),
+    };
+
+    const testService = service({
+      logger: () => {},
+      endpoint: {
+        accept: () => true,
+        handle: () => response,
+      },
+    });
+
+    const serverResponse = createMockResponse();
+    await testService({} as any, serverResponse as any);
+
+    deepStrictEqual(
+      serverResponse.response().status,
+      INTERNAL_SERVER_ERROR,
+      "Service should handle stream errors correctly",
     );
   }
 
