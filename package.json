@@ -15,7 +15,7 @@
   "scripts": {
     "format": "yarn prettier -w src/**/*.ts tests/**/*.ts *.json",
     "test": "ts-node tests/index.ts",
-    "prepare": "tsc",
+    "prepare": "rm -rf lib && tsc",
     "prepublishOnly": "yarn test"
   },
   "files": [
