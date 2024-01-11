@@ -1,5 +1,4 @@
 import { createServer } from "http";
-import { listener } from "../listener";
 import { service } from "../service";
 import { staticFiles } from "../static-files";
 
@@ -10,7 +9,7 @@ const startServer = async () => {
     dir: "src/example/static",
     dynamic: true,
   });
-  const server = createServer(listener(service({ endpoint })));
+  const server = createServer(service({ endpoint }));
 
   server.listen(port, () => {
     console.log(`Server started on port ${port}`);

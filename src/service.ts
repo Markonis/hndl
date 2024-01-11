@@ -1,4 +1,4 @@
-import { ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http";
 import { Readable } from "stream";
 import { endpoint, router } from "./endpoint";
 import { INTERNAL_SERVER_ERROR, NOT_FOUND } from "./status";
@@ -10,7 +10,7 @@ type ServiceProps = {
   logger?: Logger;
 };
 
-type Listener = (req: Request, res: ServerResponse) => Promise<void>;
+type Listener = (req: IncomingMessage, res: ServerResponse) => Promise<void>;
 
 export const service = ({
   endpoint: rootEndpoint,
@@ -22,13 +22,13 @@ export const service = ({
     let response: Response;
 
     try {
-      response = await produceResponse(request, serviceRouter);
+      response = await produceResponse(request as Request, serviceRouter);
     } catch (error) {
       response = await errorHandler(error);
     }
 
     writeResponse(response, serverResponse);
-    logger(request, response);
+    logger(request as Request, response);
   }
 };
 

@@ -1,7 +1,6 @@
 import { createServer } from "http";
 import { acceptPath } from "../accept-path";
 import { endpoint } from "../endpoint";
-import { listener } from "../listener";
 import { json } from "../response";
 import { service } from "../service";
 
@@ -18,7 +17,7 @@ const helloEndpoint = endpoint({
   },
 });
 
-const server = createServer(listener(service({ endpoint: helloEndpoint })));
+const server = createServer(service({ endpoint: helloEndpoint }));
 
 server.listen(port, () => {
   console.log(`Server started on port ${port}`);
