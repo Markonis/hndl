@@ -1,3 +1,5 @@
+import { ServerResponse } from "http";
+import { Readable } from "stream";
 import { endpoint, router } from "./endpoint";
 import { INTERNAL_SERVER_ERROR, NOT_FOUND } from "./status";
 import { Endpoint, ErrorHandler, Logger, Request, Response } from "./types";
@@ -8,36 +10,54 @@ type ServiceProps = {
   logger?: Logger;
 };
 
+type Listener = (req: Request, res: ServerResponse) => Promise<void>;
+
 export const service = ({
   endpoint: rootEndpoint,
   errorHandler = defaultErrorHandler,
   logger = defaultLogger,
-}: ServiceProps): Endpoint<Request> => {
+}: ServiceProps): Listener => {
   const serviceRouter = router(rootEndpoint, catchAllEndpoint);
-  return endpoint({
-    accept: (request) => request,
-    handle: async (request) => {
-      const response = await produceResponse(
-        request,
-        serviceRouter,
-        errorHandler,
-      );
-      logger(request, response);
-      return response;
-    },
-  });
+  return async (request, serverResponse) => {
+    let response: Response;
+
+    try {
+      response = await produceResponse(request, serviceRouter);
+    } catch (error) {
+      response = await errorHandler(error);
+    }
+
+    writeResponse(response, serverResponse);
+    logger(request, response);
+  }
 };
 
 const produceResponse = async (
   request: Request,
   endpoint: Endpoint<any>,
-  errorHandler: ErrorHandler = defaultErrorHandler,
 ) => {
-  try {
     const payload = await endpoint.accept(request);
-    return endpoint.handle(payload);
-  } catch (error) {
-    return await errorHandler(error);
+    if (payload) {
+      return await endpoint.handle(payload);
+    } else {
+      return {
+        status: INTERNAL_SERVER_ERROR,
+        body: "Endpoint did not produce a response",
+        headers: { "Content-Type": "text/plain" },
+      };
+    }
+};
+
+const writeResponse = (
+  response: Response,
+  serverResponse: ServerResponse,
+) => {
+  const { status, headers, body } = response;
+  serverResponse.writeHead(status.code, status.phrase, headers);
+  if (body instanceof Readable) {
+    body.pipe(serverResponse);
+  } else {
+    serverResponse.end(body);
   }
 };
 
