@@ -84,7 +84,7 @@ const defaultErrorHandler = (error: any): Response => {
   return {
     status: getErrorStatus(error),
     headers: error?.headers,
-    body: error?.message ?? error.body,
+    body: error.body ?? error?.message,
   };
 };
 
