@@ -2,7 +2,7 @@ import { createServer } from "http";
 import { acceptPath } from "../accept-path";
 import { endpoint } from "../endpoint";
 import { service } from "../service";
-import { jsonResponse } from "../helpers";
+import { OK } from "../status";
 
 const port = process.env.PORT || "3000";
 
@@ -13,7 +13,11 @@ const helloEndpoint = endpoint({
       params: { name: (s) => s },
     }),
   handle: (payload) => {
-    return jsonResponse({ hello: payload.name });
+    return {
+      status: OK,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hello: payload.name })
+    };
   },
 });
 
