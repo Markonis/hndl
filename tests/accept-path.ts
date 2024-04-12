@@ -33,6 +33,11 @@ export function acceptPathTests()
     deepStrictEqual(params, { greeting: "world" });
   }
 
+  { // FAIL: double slash
+    const params = parsePathWithParams("/hello//world", "/hello/:greeting");
+    deepStrictEqual(params, undefined);
+  }
+
   { // MATCH: only one param
     const params = parsePathWithParams("hello", ":greeting");
     deepStrictEqual(params, { greeting: "hello" });
