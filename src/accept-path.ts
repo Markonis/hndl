@@ -12,12 +12,12 @@ type Params<T extends PathParamParsersMap> = {
   [k in keyof T]: ReturnType<T[k]>;
 };
 
-export const acceptPath = <T extends PathParamParsersMap>(
+export function acceptPath<T extends PathParamParsersMap>(
   request: Request,
   def: AcceptPathDef<T>,
-) => {
+) {
   const [path] = request.url.split("?");
-  const paramsData = getPathParamsData(path, def.path);
+  const paramsData = parsePathWithParams(path, def.path);
   if (!paramsData) return;
 
   const params = {} as Params<T>;
@@ -28,22 +28,51 @@ export const acceptPath = <T extends PathParamParsersMap>(
   return params;
 };
 
-const getPathParamsData = (path: string, pattern: string) => {
+export function parsePathWithParams(url: string, pattern: string) {
   const data: Record<string, string> = {};
 
-  const patternParts = pattern.split("/").filter((p) => p);
-  const pathParts = path.split("/").filter((p) => p);
-  if (pathParts.length !== patternParts.length) return;
+  let urlIndex = 0;
+  let patternIndex = 0;
 
-  for (let index = 0; index < pathParts.length; index++) {
-    const patternPart = patternParts[index];
-    const pathPart = pathParts[index];
-    if (patternPart.startsWith(":")) {
-      data[patternPart.slice(1)] = pathPart;
-    } else if (patternPart !== pathPart) {
+  while (true) {
+    if (pattern[patternIndex] === ":") {
+      // Start of param
+      patternIndex++;
+      let paramName = "";
+      let paramValue = "";
+
+      // Consume param name
+      while (pattern[patternIndex] !== "/" && patternIndex <= pattern.length - 1) {
+        paramName += pattern[patternIndex++];
+      }
+
+      // Consume param value
+      while (url[urlIndex] !== "/" && url[urlIndex] !== "?" && urlIndex <= url.length - 1) {
+        paramValue += url[urlIndex++];
+      }
+
+      if (paramName.length && paramValue.length) {
+        data[paramName] = paramValue;
+      }
+    }
+
+    const urlEnd = urlIndex === url.length || url[urlIndex] === "?";
+    const patternEnd = patternIndex === pattern.length;
+
+    if (urlEnd && patternEnd) {
+      return data;
+    } else if (urlEnd !== patternEnd) {
+      // The length of pattern and url is different
       return;
     }
-  }
 
-  return data;
-};
+    if (url[urlIndex] !== pattern[patternIndex]) {
+      // We are not parsing params and pattern and url are different
+      // means it's not a match
+      return;
+    }
+
+    urlIndex++;
+    patternIndex++;
+  }
+}
